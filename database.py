@@ -49,18 +49,33 @@ def init_db():
         nationality TEXT DEFAULT 'ไทย',
         address_no TEXT,
         moo TEXT,
+        soi TEXT,
+        road TEXT,
         tambon TEXT,
         amphur TEXT,
         province TEXT,
         zipcode TEXT,
-        prev_school TEXT,
-        prev_school_province TEXT,
-        gpax REAL,
+        current_grade TEXT, -- กำลังศึกษาอยู่ในระดับชั้น เช่น ม.3, ม.6, ปวช.3
+        prev_school TEXT, -- ชื่อโรงเรียนเดิม
+        school_address_no TEXT,
+        school_tambon TEXT,
+        school_amphur TEXT,
+        school_province TEXT,
+        current_major TEXT, -- สาขาวิชาเดิม (กรณีจบ ปวช. มาต่อ ปวส.)
+        gpax REAL, -- ผลการเรียนเฉลี่ยสะสม ๕ ภาคเรียน
         level TEXT NOT NULL, -- ปวช. หรือ ปวส.
-        major_id TEXT NOT NULL,
+        apply_track TEXT, -- ระดับ ปวส. ( สายตรง ), ระดับ ปวส. ( ม.๖/ปวช. ต่างสาขา ), ระดับ ปวช.
+        major_id TEXT NOT NULL, -- สาขาวิชาที่ต้องการสมัคร (หรือ ปวช. ลำดับที่ ๑)
+        major_second_choice TEXT, -- สาขาวิชาลำดับที่ ๒ (สำหรับ ปวช.)
         parent_name TEXT,
         parent_relation TEXT,
         parent_phone TEXT,
+        father_name TEXT,
+        father_age TEXT,
+        father_job TEXT,
+        mother_name TEXT,
+        mother_age TEXT,
+        mother_job TEXT,
         referral_source TEXT,
         referral_teacher TEXT,
         status TEXT DEFAULT 'PENDING_REVIEW', 
@@ -75,6 +90,31 @@ def init_db():
         FOREIGN KEY (major_id) REFERENCES majors(id)
     )
     """)
+
+    # Auto-migrate new columns for existing database
+    cursor.execute("PRAGMA table_info(applicants)")
+    existing_cols = [row[1] for row in cursor.fetchall()]
+    new_cols = [
+        ("apply_track", "TEXT"),
+        ("soi", "TEXT"),
+        ("road", "TEXT"),
+        ("current_grade", "TEXT"),
+        ("school_address_no", "TEXT"),
+        ("school_tambon", "TEXT"),
+        ("school_amphur", "TEXT"),
+        ("school_province", "TEXT"),
+        ("current_major", "TEXT"),
+        ("major_second_choice", "TEXT"),
+        ("father_name", "TEXT"),
+        ("father_age", "TEXT"),
+        ("father_job", "TEXT"),
+        ("mother_name", "TEXT"),
+        ("mother_age", "TEXT"),
+        ("mother_job", "TEXT"),
+    ]
+    for col_name, col_type in new_cols:
+        if col_name not in existing_cols:
+            cursor.execute(f"ALTER TABLE applicants ADD COLUMN {col_name} {col_type}")
 
     # 3. Documents Table
     cursor.execute("""

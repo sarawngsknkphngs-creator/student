@@ -59,17 +59,18 @@
     <!-- ============================================================== -->
     <div id="tabContent-home" class="tab-pane space-y-12">
         <!-- Hero Banner -->
-        <div class="relative overflow-hidden bg-gradient-to-b from-brand-900 via-brand-800 to-slate-900 text-white rounded-3xl p-8 sm:p-14 shadow-xl">
-            <div class="max-w-4xl mx-auto text-center relative z-10">
-                <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-200 border border-brand-400/30 mb-6">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> เปิดรับสมัครรอบโควตาและรอบทั่วไป ประจำปีการศึกษา 2568
+        <div class="relative overflow-hidden bg-gradient-to-br from-brand-950 via-brand-900 to-slate-900 text-white rounded-3xl p-8 sm:p-14 shadow-2xl border border-brand-800/50">
+            <div class="max-w-4xl mx-auto text-center relative z-10 space-y-4">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-200 border border-brand-400/30 backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> สำนักงานคณะกรรมการการอาชีวศึกษา (สอศ.)
                 </span>
-                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-                    ระบบรับสมัครนักเรียน นักศึกษาใหม่ออนไลน์<br/>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-sky-200 to-white">วิทยาลัยอาชีวศึกษา ครบวงจรในหน้าเดียว</span>
+                <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-snug">
+                    ใบสมัครเข้ารับคัดเลือกเพื่อศึกษาต่อเป็นกรณีพิเศษ (โควตา)<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-sky-200 to-white">วิทยาลัยเทคนิคท่าหลวงซิเมนต์ไทยอนุสรณ์</span>
                 </h1>
-                <p class="mt-4 text-sm sm:text-base text-slate-300 max-w-2xl mx-auto">
-                    สมัครเรียนระดับ <b>ปวช. (รับ ม.3)</b> และ <b>ปวส. (รับ ม.6 / ปวช.)</b> พร้อมระบบตรวจสอบเอกสาร ออกใบมอบตัว (PDF) และเชื่อมต่อฐานข้อมูล ศธ.02
+                <p class="mt-4 text-sm sm:text-base text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">
+                    เปิดรับสมัครนักเรียน นักศึกษา ระดับ <b>ปวช. (รับ ม.3)</b> และ <b>ปวส. (สายตรง / ม.6 / ต่างสาขา)</b><br/>
+                    ประจำปีการศึกษา ๒๕๖๘ พร้อมระบบพิมพ์ใบสมัครทางการ A4 และเชื่อมโยงฐานข้อมูล ศธ.02
                 </p>
 
                 <!-- Quick Action Buttons -->
@@ -174,47 +175,71 @@
     <!-- TAB 2: แบบฟอร์มสมัครเรียนออนไลน์ (APPLY)                        -->
     <!-- ============================================================== -->
     <div id="tabContent-apply" class="tab-pane hidden space-y-6">
-        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center font-bold text-xl flex-shrink-0">
-                    <i data-lucide="clipboard-edit" class="w-6 h-6"></i>
-                </div>
+                <img src="/static/vec_logo.png" alt="Logo" class="w-12 h-12 object-contain flex-shrink-0">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-900">แบบฟอร์มสมัครเรียนออนไลน์ ประจำปีการศึกษา 2568</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">กรอกข้อมูลให้ครบถ้วน พร้อมระบบตรวจสอบเลขบัตร 13 หลัก และอัปโหลดเอกสาร</p>
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900">ใบสมัครเข้ารับคัดเลือกเพื่อศึกษาต่อเป็นกรณีพิเศษ (โควตา)</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">วิทยาลัยเทคนิคท่าหลวงซิเมนต์ไทยอนุสรณ์ ประจำปีการศึกษา ๒๕๖๘</p>
                 </div>
             </div>
         </div>
 
         <form action="/apply" method="POST" enctype="multipart/form-data" id="unifiedAdmissionForm" class="space-y-6">
-            <!-- 1. ระดับและสาขา -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3 mb-4">
+            <!-- แทร็กและสาขาวิชา -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3">
                     <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">1</span>
-                    ระดับชั้นและสาขาวิชาที่เลือกสมัคร
+                    ระดับชั้นและประเภทโควตาที่ต้องการสมัคร
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <label class="p-4 border-2 border-slate-200 rounded-2xl cursor-pointer hover:border-brand-500 transition flex items-center gap-3 bg-slate-50/50">
+                        <input type="radio" name="apply_track" value="ระดับ ปวช." checked onchange="handleServerTrackChange('ปวช.')" class="w-4 h-4 text-brand-700">
+                        <div>
+                            <b class="text-xs text-slate-900 block">ระดับ ปวช.</b>
+                            <span class="text-[11px] text-slate-500">รับผู้จบ ม.3 หรือเทียบเท่า</span>
+                        </div>
+                    </label>
+                    <label class="p-4 border-2 border-slate-200 rounded-2xl cursor-pointer hover:border-brand-500 transition flex items-center gap-3 bg-slate-50/50">
+                        <input type="radio" name="apply_track" value="ระดับ ปวส. ( สายตรง )" onchange="handleServerTrackChange('ปวส.')" class="w-4 h-4 text-brand-700">
+                        <div>
+                            <b class="text-xs text-slate-900 block">ระดับ ปวส. ( สายตรง )</b>
+                            <span class="text-[11px] text-slate-500">รับผู้จบ ปวช. สาขาวิชาตรง</span>
+                        </div>
+                    </label>
+                    <label class="p-4 border-2 border-slate-200 rounded-2xl cursor-pointer hover:border-brand-500 transition flex items-center gap-3 bg-slate-50/50">
+                        <input type="radio" name="apply_track" value="ระดับ ปวส. ( ม.๖/ปวช. ต่างสาขา )" onchange="handleServerTrackChange('ปวส.')" class="w-4 h-4 text-brand-700">
+                        <div>
+                            <b class="text-xs text-slate-900 block">ระดับ ปวส. ( ม.๖/ปวช. ต่างสาขา )</b>
+                            <span class="text-[11px] text-slate-500">รับ ม.6 หรือ ปวช. ต่างสาขา</span>
+                        </div>
+                    </label>
+                </div>
+
+                <input type="hidden" name="level" id="hiddenLevelInput" value="ปวช.">
+
+                <!-- สาขาวิชาที่เลือกสมัคร -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">ระดับการศึกษา <span class="text-rose-500">*</span></label>
-                        <select name="level" id="unifiedLevelSelect" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
-                            <option value="">-- เลือกระดับการศึกษา --</option>
-                            <option value="ปวช.">ปวช. (ประกาศนียบัตรวิชาชีพ - รับ ม.3)</option>
-                            <option value="ปวส.">ปวส. (ประกาศนียบัตรวิชาชีพชั้นสูง - รับ ม.6 / ปวช.)</option>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">สาขาวิชาที่ต้องการสมัคร (ลำดับที่ ๑) <span class="text-rose-500">*</span></label>
+                        <select name="major_id" id="unifiedMajorSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-brand-500">
+                            <option value="">-- เลือกสาขาวิชา --</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">สาขาวิชาที่เลือกสมัคร <span class="text-rose-500">*</span></label>
-                        <select name="major_id" id="unifiedMajorSelect" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
-                            <option value="">-- กรุณาเลือกระดับการศึกษาก่อน --</option>
+                    <div id="serverBoxVocSecondChoice">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">สาขาวิชาลำดับที่ ๒ (เฉพาะ ปวช.)</label>
+                        <select name="major_second_choice" id="unifiedMajorSecondSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-brand-500">
+                            <option value="">-- เลือกสาขาวิชาสำรองลำดับที่ ๒ (ถ้ามี) --</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. ข้อมูลส่วนตัว -->
+            <!-- ๑. ข้อมูลส่วนตัวของผู้สมัคร -->
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
-                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3 mb-2">
-                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">2</span>
+                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3">
+                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">๑</span>
                     ข้อมูลส่วนตัวของผู้สมัคร
                 </div>
 
@@ -223,14 +248,14 @@
                     <input type="text" name="national_id" id="unifiedNationalId" maxlength="13" required
                            placeholder="เช่น 1100400123456"
                            data-feedback-id="unifiedIdFeedback"
-                           class="thai-id-input w-full max-w-sm px-3 py-2 rounded-xl border border-slate-300 font-mono tracking-widest text-xs">
+                           class="thai-id-input w-full max-w-sm px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono tracking-widest text-xs focus:ring-2 focus:ring-brand-500">
                     <div id="unifiedIdFeedback" class="text-[11px] mt-1 text-slate-400">กรอกเลขบัตร 13 หลัก (ระบบจะตรวจสูตร Mod-11 อัตโนมัติ)</div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">คำนำหน้า <span class="text-rose-500">*</span></label>
-                        <select name="title" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+                        <select name="title" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
                             <option value="นาย">นาย</option>
                             <option value="นางสาว">นางสาว</option>
                             <option value="เด็กชาย">เด็กชาย</option>
@@ -239,114 +264,171 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อจริง <span class="text-rose-500">*</span></label>
-                        <input type="text" name="first_name" required placeholder="ชื่อ" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <input type="text" name="first_name" required placeholder="ชื่อ" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-slate-700 mb-1">นามสกุล <span class="text-rose-500">*</span></label>
-                        <input type="text" name="last_name" required placeholder="นามสกุล" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <input type="text" name="last_name" required placeholder="นามสกุล" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">วันเดือนปีเกิด <span class="text-rose-500">*</span></label>
-                        <input type="date" name="birth_date" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <input type="date" name="birth_date" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">เพศ <span class="text-rose-500">*</span></label>
-                        <select name="gender" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+                        <select name="gender" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
                             <option value="ชาย">ชาย</option>
                             <option value="หญิง">หญิง</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">เบอร์โทรศัพท์ (10 หลัก) <span class="text-rose-500">*</span></label>
-                        <input type="text" name="phone" maxlength="10" required placeholder="08xxxxxxxx" class="thai-phone-input w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <input type="text" name="phone" maxlength="10" required placeholder="08xxxxxxxx" class="thai-phone-input w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">อีเมล</label>
-                        <input type="email" name="email" placeholder="example@mail.com" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <input type="email" name="email" placeholder="student@example.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                    <input type="text" name="address_no" placeholder="บ้านเลขที่" class="px-3 py-2 rounded-xl border border-slate-300 text-xs">
-                    <input type="text" name="tambon" placeholder="ตำบล/แขวง" class="px-3 py-2 rounded-xl border border-slate-300 text-xs">
-                    <input type="text" name="amphur" placeholder="อำเภอ/เขต" class="px-3 py-2 rounded-xl border border-slate-300 text-xs">
-                    <input type="text" name="province" placeholder="จังหวัด" class="px-3 py-2 rounded-xl border border-slate-300 text-xs">
                 </div>
             </div>
 
-            <!-- 3. การศึกษาเดิม -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3 mb-4">
-                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">3</span>
-                    ประวัติการศึกษาเดิม & ผู้ปกครอง
+            <!-- ๒ - ๓. ข้อมูลบิดาและมารดา -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3">
+                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">๒-๓</span>
+                    ข้อมูลบิดา และ มารดา
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+
+                <!-- ๒. บิดา -->
+                <div>
+                    <div class="text-xs font-bold text-slate-900 mb-2">๒. ข้อมูลบิดา</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="sm:col-span-2">
+                            <input type="text" name="father_name" placeholder="ชื่อ-สกุล บิดา" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                        </div>
+                        <div>
+                            <input type="text" name="father_age" placeholder="อายุบิดา (ปี)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                        </div>
+                        <div>
+                            <input type="text" name="father_job" placeholder="อาชีพบิดา" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ๓. มารดา -->
+                <div class="pt-2 border-t border-slate-100">
+                    <div class="text-xs font-bold text-slate-900 mb-2">๓. ข้อมูลมารดา</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="sm:col-span-2">
+                            <input type="text" name="mother_name" placeholder="ชื่อ-สกุล มารดา" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                        </div>
+                        <div>
+                            <input type="text" name="mother_age" placeholder="อายุมารดา (ปี)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                        </div>
+                        <div>
+                            <input type="text" name="mother_job" placeholder="อาชีพมารดา" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ๔. ที่อยู่ปัจจุบันที่สามารถติดต่อได้ -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3">
+                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">๔</span>
+                    ที่อยู่ปัจจุบันที่สามารถติดต่อได้
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <input type="text" name="address_no" placeholder="บ้านเลขที่ *" required class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="moo" placeholder="หมู่ที่" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="soi" placeholder="ซอย" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="road" placeholder="ถนน" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <input type="text" name="tambon" placeholder="ตำบล/แขวง *" required class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="amphur" placeholder="อำเภอ/เขต *" required class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="province" placeholder="จังหวัด *" required class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="zipcode" placeholder="รหัสไปรษณีย์ *" required class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+            </div>
+
+            <!-- ๕. ข้อมูลสถานศึกษาเดิม & ผลการเรียน -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3">
+                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">๕</span>
+                    ข้อมูลสถานศึกษาเดิม & ผลการเรียนเฉลี่ยสะสม
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">กำลังศึกษาอยู่ในระดับชั้น <span class="text-rose-500">*</span></label>
+                        <input type="text" name="current_grade" required placeholder="เช่น ม.3, ม.6, ปวช.3" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                    <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อโรงเรียนเดิม <span class="text-rose-500">*</span></label>
-                        <input type="text" name="prev_school" required placeholder="ชื่อโรงเรียนเดิม" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">จังหวัดโรงเรียนเดิม <span class="text-rose-500">*</span></label>
-                        <input type="text" name="prev_school_province" required placeholder="เช่น กรุงเทพฯ, นครปฐม" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">เกรดเฉลี่ย (GPAX) <span class="text-rose-500">*</span></label>
-                        <input type="number" step="0.01" min="0" max="4" name="gpax" required placeholder="3.50" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <input type="text" name="prev_school" required placeholder="เช่น โรงเรียนสระบุรีวิทยาคม" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <input type="text" name="school_address_no" placeholder="ตั้งอยู่เลขที่" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="school_tambon" placeholder="ตำบล" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="school_amphur" placeholder="อำเภอ" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" name="school_province" placeholder="จังหวัด" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อ-สกุล ผู้ปกครอง <span class="text-rose-500">*</span></label>
-                        <input type="text" name="parent_name" required placeholder="ชื่อผู้ปกครอง" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ผลการเรียนเฉลี่ยสะสม (GPAX ๕ ภาคเรียน) <span class="text-rose-500">*</span></label>
+                        <input type="number" step="0.01" min="0" max="4" name="gpax" required placeholder="เช่น 3.45" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">ความสัมพันธ์ <span class="text-rose-500">*</span></label>
-                        <select name="parent_relation" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
-                            <option value="บิดา">บิดา</option>
-                            <option value="มารดา">มารดา</option>
-                            <option value="ผู้ปกครอง">ผู้ปกครอง</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">เบอร์โทรผู้ปกครอง <span class="text-rose-500">*</span></label>
-                        <input type="text" name="parent_phone" maxlength="10" required placeholder="08xxxxxxxx" class="thai-phone-input w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">สาขาวิชาเดิม (สำหรับผู้จบ ปวช.)</label>
+                        <input type="text" name="current_major" placeholder="เช่น ช่างยนต์, ช่างไฟฟ้า, การบัญชี" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
                     </div>
                 </div>
             </div>
 
-            <!-- 4. อัปโหลดเอกสาร -->
-            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3 mb-4">
-                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">4</span>
-                    อัปโหลดเอกสารหลักฐาน (JPG, PNG, PDF ขนาดไม่เกิน 5MB)
+            <!-- หลักฐานประกอบการสมัคร & อัปโหลด -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 text-brand-800 font-bold text-base border-b border-slate-100 pb-3">
+                    <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">๖</span>
+                    หลักฐานประกอบการสมัคร & รูปถ่าย
                 </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                        <label class="font-bold text-slate-800 block mb-1">1. รูปถ่ายหน้าตรง (1-1.5 นิ้ว) <span class="text-rose-500">*</span></label>
-                        <input type="file" name="file_photo" accept="image/jpeg,image/png" required class="validated-file-input block w-full text-xs text-slate-500">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                        <label class="font-bold text-slate-800 block mb-1">รูปถ่ายหน้าตรง ขนาด ๑ นิ้ว <span class="text-rose-500">*</span></label>
+                        <p class="text-[11px] text-slate-400 mb-2">เพื่อติดในใบสมัครราชการ (ชุดนักเรียน/สุภาพ)</p>
+                        <input type="file" name="file_photo" accept="image/jpeg,image/png" required class="block w-full text-xs text-slate-500">
                     </div>
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                        <label class="font-bold text-slate-800 block mb-1">2. ใบแสดงผลการเรียน (รบ./ปพ.1) <span class="text-rose-500">*</span></label>
-                        <input type="file" name="file_transcript" accept="image/jpeg,image/png,application/pdf" required class="validated-file-input block w-full text-xs text-slate-500">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                        <label class="font-bold text-slate-800 block mb-1">๑. เอกสารแสดงผลการเรียนเฉลี่ยสะสม ๕ ภาคเรียน <span class="text-rose-500">*</span></label>
+                        <p class="text-[11px] text-slate-400 mb-2">ใบ ปพ.1 หรือหนังสือรับรองผลการเรียน</p>
+                        <input type="file" name="file_transcript" accept="image/jpeg,image/png,application/pdf" required class="block w-full text-xs text-slate-500">
                     </div>
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                        <label class="font-bold text-slate-800 block mb-1">3. สำเนาบัตรประชาชน <span class="text-rose-500">*</span></label>
-                        <input type="file" name="file_id_card" accept="image/jpeg,image/png,application/pdf" required class="validated-file-input block w-full text-xs text-slate-500">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                        <label class="font-bold text-slate-800 block mb-1">๒. สำเนาบัตรประชาชน / สำเนาทะเบียนบ้าน <span class="text-rose-500">*</span></label>
+                        <p class="text-[11px] text-slate-400 mb-2">จำนวน ๑ ฉบับ พร้อมรับรองสำเนาถูกต้อง</p>
+                        <input type="file" name="file_id_card" accept="image/jpeg,image/png,application/pdf" required class="block w-full text-xs text-slate-500">
                     </div>
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                        <label class="font-bold text-slate-800 block mb-1">4. สำเนาทะเบียนบ้าน <span class="text-rose-500">*</span></label>
-                        <input type="file" name="file_house_reg" accept="image/jpeg,image/png,application/pdf" required class="validated-file-input block w-full text-xs text-slate-500">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                        <label class="font-bold text-slate-800 block mb-1">๓. สำเนาเกียรติบัตร / ใบรับรองความสามารถพิเศษ</label>
+                        <p class="text-[11px] text-slate-400 mb-2">ใบประกาศนียบัตรผลงานดีเด่น (ถ้ามี)</p>
+                        <input type="file" name="file_house_reg" accept="image/jpeg,image/png,application/pdf" class="block w-full text-xs text-slate-500">
                     </div>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <span class="text-xs text-slate-500">ข้าพเจ้าขอรับรองว่าข้อมูลและเอกสารที่ยื่นเป็นความจริงทุกประการ</span>
-                    <button type="submit" class="px-8 py-3 bg-brand-800 hover:bg-brand-900 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-1.5">
-                        <i data-lucide="send" class="w-4 h-4"></i> ยืนยันการส่งใบสมัคร
+                <div class="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <span class="text-xs text-slate-500 flex items-center gap-1.5">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i> ข้อมูลจะถูกจัดเก็บและออกเป็นแบบฟอร์มใบสมัครทางการ A4
+                    </span>
+                    <button type="submit" class="px-8 py-3.5 bg-brand-800 hover:bg-brand-900 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4 text-amber-300"></i> ยืนยันการส่งใบสมัคร & สร้าง PDF ทางการ
                     </button>
                 </div>
             </div>
@@ -632,37 +714,58 @@
 
     function setApplyLevel(level) {
         switchTab('apply');
-        const levelSelect = document.getElementById('unifiedLevelSelect');
-        if (levelSelect) {
-            levelSelect.value = level;
-            updateUnifiedMajors();
+        const trackRadio = document.querySelector(`input[name="apply_track"][value*="${level}"]`);
+        if (trackRadio) {
+            trackRadio.checked = true;
         }
+        handleServerTrackChange(level);
     }
 
     // Majors cascading dropdown
     const allMajors = {{ majors_json | safe }};
-    const levelSelect = document.getElementById('unifiedLevelSelect');
-    const majorSelect = document.getElementById('unifiedMajorSelect');
+    function handleServerTrackChange(level) {
+        const hiddenLevel = document.getElementById('hiddenLevelInput');
+        if (hiddenLevel) hiddenLevel.value = level;
 
-    function updateUnifiedMajors() {
-        const lvl = levelSelect.value;
-        majorSelect.innerHTML = '<option value="">-- เลือกสาขาวิชา --</option>';
-        if (!lvl) {
-            majorSelect.innerHTML = '<option value="">-- กรุณาเลือกระดับการศึกษาก่อน --</option>';
-            return;
+        const boxSecond = document.getElementById('serverBoxVocSecondChoice');
+        if (boxSecond) {
+            if (level === 'ปวช.') {
+                boxSecond.classList.remove('hidden');
+            } else {
+                boxSecond.classList.add('hidden');
+            }
         }
-        const filtered = allMajors.filter(m => m.level === lvl);
+        updateUnifiedMajors(level);
+    }
+
+    function updateUnifiedMajors(lvl) {
+        const hiddenLevel = document.getElementById('hiddenLevelInput');
+        const targetLevel = lvl || (hiddenLevel ? hiddenLevel.value : 'ปวช.');
+        const majorSelect = document.getElementById('unifiedMajorSelect');
+        const secondSelect = document.getElementById('unifiedMajorSecondSelect');
+        if (!majorSelect) return;
+
+        majorSelect.innerHTML = '<option value="">-- เลือกสาขาวิชา --</option>';
+        if (secondSelect) secondSelect.innerHTML = '<option value="">-- เลือกสาขาวิชาสำรองลำดับที่ ๒ (ถ้ามี) --</option>';
+
+        const filtered = allMajors.filter(m => m.level === targetLevel);
         filtered.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m.id;
             opt.textContent = `${m.name} (รหัส ศธ.02: ${m.code})`;
             majorSelect.appendChild(opt);
+
+            if (secondSelect && targetLevel === 'ปวช.') {
+                const opt2 = document.createElement('option');
+                opt2.value = m.name;
+                opt2.textContent = `${m.name} (รหัส: ${m.code})`;
+                secondSelect.appendChild(opt2);
+            }
         });
     }
 
-    if (levelSelect) {
-        levelSelect.addEventListener('change', updateUnifiedMajors);
-    }
+    // Initialize initial majors dropdown
+    updateUnifiedMajors('ปวช.');
 
     // Live Status Search
     async function doLiveSearchStatus() {

@@ -1,6 +1,7 @@
 import os
 import qrcode
 from io import BytesIO
+from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -26,6 +27,25 @@ def register_fonts():
 
 register_fonts()
 
+THAI_MONTHS = [
+    "", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+]
+
+def parse_thai_date(date_str):
+    if not date_str:
+        return ("", "", "")
+    try:
+        parts = str(date_str).replace("/", "-").split("-")
+        if len(parts) == 3:
+            y, m, d = int(parts[0]), int(parts[1]), int(parts[2])
+            thai_year = y + 543 if y < 2400 else y
+            month_name = THAI_MONTHS[m] if 1 <= m <= 12 else str(m)
+            return (str(d), month_name, str(thai_year))
+    except Exception:
+        pass
+    return (str(date_str), "", "")
+
 def generate_qr_image(data_text: str, size: int = 100) -> str:
     """Generates a temporary QR code image file and returns its path."""
     qr = qrcode.QRCode(
@@ -39,212 +59,298 @@ def generate_qr_image(data_text: str, size: int = 100) -> str:
     img = qr.make_image(fill_color="black", back_color="white")
     
     os.makedirs("d:/sk/static/generated_pdfs/qr", exist_ok=True)
-    file_path = f"d:/sk/static/generated_pdfs/qr/qr_{hash(data_text)}.png"
+    file_path = f"d:/sk/static/generated_pdfs/qr/qr_{abs(hash(data_text))}.png"
     img.save(file_path)
     return file_path
 
+def val_or_dots(val, default_dots="................................................"):
+    if val is not None and str(val).strip() and str(val).strip() != "-":
+        return f"<b>{str(val).strip()}</b>"
+    return default_dots
+
 def generate_application_pdf(applicant: dict, output_path: str, base_url: str = "http://localhost:8000"):
     """
-    Generates official A4 Application Form (ใบสมัครเข้าศึกษาต่อ)
+    Generates official A4 Application Form (ใบสมัครเข้ารับคัดเลือกเพื่อศึกษาต่อเป็นกรณีพิเศษ - โควตา)
+    วิทยาลัยเทคนิคท่าหลวงซิเมนต์ไทยอนุสรณ์
+    Replicating the exact physical paper form layout on a single A4 page.
     """
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A4,
         leftMargin=1.5*cm,
         rightMargin=1.5*cm,
-        topMargin=1.5*cm,
-        bottomMargin=1.5*cm
+        topMargin=1.2*cm,
+        bottomMargin=1.0*cm
     )
 
     styles = getSampleStyleSheet()
     
-    title_style = ParagraphStyle(
-        'ThaiTitle',
-        fontName='Sarabun-Bold',
-        fontSize=18,
-        leading=22,
-        alignment=1, # Center
-        textColor=colors.HexColor('#1e3a8a')
-    )
-    subtitle_style = ParagraphStyle(
-        'ThaiSubtitle',
-        fontName='Sarabun',
-        fontSize=12,
-        leading=16,
-        alignment=1,
-        textColor=colors.HexColor('#475569')
-    )
-    section_title = ParagraphStyle(
-        'SectionTitle',
+    header_title_style = ParagraphStyle(
+        'HeaderTitle',
         fontName='Sarabun-Bold',
         fontSize=13,
-        leading=17,
-        textColor=colors.HexColor('#1e40af'),
-        spaceBefore=6,
-        spaceAfter=4
-    )
-    normal_style = ParagraphStyle(
-        'ThaiNormal',
-        fontName='Sarabun',
-        fontSize=11,
-        leading=15,
+        leading=18,
+        alignment=1, # Center
         textColor=colors.black
     )
-    bold_style = ParagraphStyle(
-        'ThaiBold',
+    
+    line_style = ParagraphStyle(
+        'FormLine',
+        fontName='Sarabun',
+        fontSize=10.5,
+        leading=17,
+        textColor=colors.black
+    )
+    
+    bold_line_style = ParagraphStyle(
+        'FormBoldLine',
         fontName='Sarabun-Bold',
-        fontSize=11,
-        leading=15,
+        fontSize=10.5,
+        leading=17,
+        textColor=colors.black
+    )
+
+    right_sig_style = ParagraphStyle(
+        'RightSig',
+        fontName='Sarabun',
+        fontSize=10.5,
+        leading=17,
+        alignment=2, # Right
         textColor=colors.black
     )
 
     story = []
 
-    # 1. Header with QR code and Applicant ID
-    qr_url = f"{base_url}/status?national_id={applicant['national_id']}"
-    qr_path = generate_qr_image(qr_url)
-    
-    # Top info table
-    header_data = [
-        [
-            Paragraph("<b>วิทยาลัยอาชีวศึกษา (Vocational College)</b><br/>ระบบรับสมัครนักเรียน นักศึกษาใหม่ ประจำปีการศึกษา 2568", subtitle_style),
-            RLImage(qr_path, width=1.8*cm, height=1.8*cm)
-        ]
-    ]
-    header_table = Table(header_data, colWidths=[14*cm, 3*cm])
+    # ---------------------------------------------------------
+    # 1. Header: Logo (Left) + Center Titles + Photo Box (Right)
+    # ---------------------------------------------------------
+    logo_path = "d:/sk/static/vec_logo.png"
+    if os.path.exists(logo_path):
+        logo_cell = RLImage(logo_path, width=2.2*cm, height=2.2*cm)
+    else:
+        logo_cell = Paragraph("<b>[ สอศ. ]</b>", ParagraphStyle('LG', fontName='Sarabun-Bold', fontSize=10, alignment=1))
+
+    title_html = (
+        "<b>ใบสมัครเข้ารับคัดเลือกเพื่อศึกษาต่อเป็นกรณีพิเศษ (โควตา)</b><br/>"
+        "<b>วิทยาลัยเทคนิคท่าหลวงซิเมนต์ไทยอนุสรณ์ ประจำปีการศึกษา ๒๕๖๘</b>"
+    )
+    title_cell = Paragraph(title_html, header_title_style)
+
+    # Photo Box
+    photo_path = applicant.get('photo_path') or ""
+    if photo_path and os.path.exists(photo_path):
+        try:
+            photo_cell = RLImage(photo_path, width=2.4*cm, height=3.0*cm)
+        except Exception:
+            photo_cell = Paragraph("รูปถ่าย<br/>ขนาด ๑ นิ้ว", ParagraphStyle('PB', fontName='Sarabun', fontSize=9, leading=12, alignment=1))
+    else:
+        photo_cell = Paragraph("รูปถ่าย<br/>ขนาด ๑ นิ้ว", ParagraphStyle('PB', fontName='Sarabun', fontSize=9, leading=12, alignment=1))
+
+    header_table = Table(
+        [[logo_cell, title_cell, photo_cell]],
+        colWidths=[2.6*cm, 12.8*cm, 2.6*cm]
+    )
     header_table.setStyle(TableStyle([
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('ALIGN', (1,0), (1,0), 'RIGHT')
+        ('ALIGN', (0,0), (0,0), 'LEFT'),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (2,0), (2,0), 'CENTER'),
+        ('BOX', (2,0), (2,0), 0.75, colors.black),
+        ('TOPPADDING', (2,0), (2,0), 10),
+        ('BOTTOMPADDING', (2,0), (2,0), 10),
     ]))
     story.append(header_table)
-    story.append(Spacer(1, 0.3*cm))
-
-    # Main Title Box
-    story.append(Paragraph("<b>ใบสมัครเข้าศึกษาต่อ</b>", title_style))
-    story.append(Paragraph(f"เลขที่ใบสมัคร: <b>{applicant['id']}</b> &nbsp;|&nbsp; วันที่สมัคร: {applicant['created_at'][:10]}", subtitle_style))
     story.append(Spacer(1, 0.4*cm))
 
-    # 2. Level & Major Box
-    choice_data = [
-        [
-            Paragraph(f"<b>ระดับชั้นที่สมัคร:</b> {applicant['level']}", normal_style),
-            Paragraph(f"<b>สาขาวิชาที่เลือก:</b> {applicant['major_name']} (รหัส: {applicant['major_code']})", normal_style)
-        ]
-    ]
-    choice_table = Table(choice_data, colWidths=[6.5*cm, 10.5*cm])
-    choice_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
-        ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#cbd5e1')),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('LEFTPADDING', (0,0), (-1,-1), 8),
-    ]))
-    story.append(choice_table)
-    story.append(Spacer(1, 0.3*cm))
+    # ---------------------------------------------------------
+    # 2. Checkboxes for Study Level & Track
+    # ---------------------------------------------------------
+    level = applicant.get('level', '')
+    apply_track = applicant.get('apply_track', '')
 
-    # 3. Personal Information
-    story.append(Paragraph("1. ข้อมูลส่วนตัวของผู้สมัคร", section_title))
-    
-    # Check if photo exists
-    photo_cell = Paragraph("<br/><br/>[ติดรูปถ่าย<br/>1 - 1.5 นิ้ว]", ParagraphStyle('PBox', fontName='Sarabun', fontSize=10, alignment=1, textColor=colors.gray))
-    if applicant.get('photo_path') and os.path.exists(applicant['photo_path']):
-        try:
-            photo_cell = RLImage(applicant['photo_path'], width=2.8*cm, height=3.6*cm)
-        except Exception:
-            pass
+    check_dip_direct = "[ &nbsp; ]"
+    check_dip_other  = "[ &nbsp; ]"
+    check_voc        = "[ &nbsp; ]"
 
-    personal_rows = [
-        [
-            Paragraph(f"<b>ชื่อ-นามสกุล:</b> {applicant['title']}{applicant['first_name']} {applicant['last_name']}", normal_style),
-            Paragraph(f"<b>เลขประจำตัวประชาชน:</b> {applicant['national_id']}", normal_style),
-            photo_cell
-        ],
-        [
-            Paragraph(f"<b>วัน/เดือน/ปีเกิด:</b> {applicant['birth_date']}", normal_style),
-            Paragraph(f"<b>เพศ:</b> {applicant['gender']} &nbsp;&nbsp; <b>ศาสนา:</b> {applicant['religion']}", normal_style),
-            ""
-        ],
-        [
-            Paragraph(f"<b>เบอร์โทรศัพท์:</b> {applicant['phone']}", normal_style),
-            Paragraph(f"<b>อีเมล:</b> {applicant.get('email') or '-'}", normal_style),
-            ""
-        ],
-        [
-            Paragraph(f"<b>ที่อยู่ปัจจุบัน:</b> {applicant.get('address_no','')} ม.{applicant.get('moo','-')} ต.{applicant.get('tambon','')} อ.{applicant.get('amphur','')} จ.{applicant.get('province','')} {applicant.get('zipcode','')}", normal_style),
-            "",
-            ""
-        ]
-    ]
-    personal_table = Table(personal_rows, colWidths=[7*cm, 7*cm, 3*cm])
-    personal_table.setStyle(TableStyle([
-        ('SPAN', (2,0), (2,2)), # Photo spans 3 rows
-        ('SPAN', (0,3), (1,3)), # Address spans 2 columns
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('BOX', (2,0), (2,2), 0.5, colors.HexColor('#94a3b8')),
-    ]))
-    story.append(personal_table)
-    story.append(Spacer(1, 0.2*cm))
+    if level == "ปวช." or "ปวช" in apply_track:
+        check_voc = "[ ✓ ]"
+    elif "ต่างสาขา" in apply_track or "ม.6" in apply_track or "ม.๖" in apply_track:
+        check_dip_other = "[ ✓ ]"
+    else:
+        # Default or Direct track
+        check_dip_direct = "[ ✓ ]"
 
-    # 4. Educational Background
-    story.append(Paragraph("2. ข้อมูลการศึกษาเดิม", section_title))
-    edu_data = [
-        [
-            Paragraph(f"<b>สำเร็จการศึกษาจากโรงเรียน:</b> {applicant.get('prev_school') or '-'}", normal_style),
-            Paragraph(f"<b>จังหวัด:</b> {applicant.get('prev_school_province') or '-'}", normal_style),
-            Paragraph(f"<b>เกรดเฉลี่ย (GPAX):</b> {applicant.get('gpax') or '-'}", normal_style)
-        ]
-    ]
-    edu_table = Table(edu_data, colWidths=[8*cm, 5*cm, 4*cm])
-    edu_table.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-    ]))
-    story.append(edu_table)
-    story.append(Spacer(1, 0.2*cm))
-
-    # 5. Parent / Guardian Info
-    story.append(Paragraph("3. ข้อมูลผู้ปกครอง & ช่องทางการรับรู้", section_title))
-    parent_data = [
-        [
-            Paragraph(f"<b>ชื่อ-สกุลผู้ปกครอง:</b> {applicant.get('parent_name') or '-'}", normal_style),
-            Paragraph(f"<b>ความสัมพันธ์:</b> {applicant.get('parent_relation') or '-'}", normal_style),
-            Paragraph(f"<b>เบอร์โทรผู้ปกครอง:</b> {applicant.get('parent_phone') or '-'}", normal_style)
-        ],
-        [
-            Paragraph(f"<b>ช่องทางที่รู้จักวิทยาลัย:</b> {applicant.get('referral_source') or '-'}", normal_style),
-            Paragraph(f"<b>ครูแนะแนว/ผู้แนะนำ:</b> {applicant.get('referral_teacher') or '-'}", normal_style),
-            ""
-        ]
-    ]
-    parent_table = Table(parent_data, colWidths=[7*cm, 5*cm, 5*cm])
-    parent_table.setStyle(TableStyle([
-        ('SPAN', (1,1), (2,1)),
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-    ]))
-    story.append(parent_table)
+    track_html = (
+        f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        f"<b>{check_dip_direct}</b>&nbsp;&nbsp;ระดับ ปวส. ( สายตรง )<br/>"
+        f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        f"<b>{check_dip_other}</b>&nbsp;&nbsp;ระดับ ปวส. ( ม.๖/ปวช. ต่างสาขา )<br/>"
+        f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        f"<b>{check_voc}</b>&nbsp;&nbsp;ระดับ ปวช."
+    )
+    story.append(Paragraph(track_html, line_style))
     story.append(Spacer(1, 0.4*cm))
 
-    # 6. Applicant Statement & Signatures
-    story.append(Paragraph("<b>คำรับรอง:</b> ข้าพเจ้าขอรับรองว่าข้อมูลและเอกสารหลักฐานที่ยื่นไว้เป็นความจริงทุกประการ หากตรวจสอบพบว่าเป็นเท็จ ข้าพเจ้ายินยอมให้ตัดสิทธิ์การเข้าศึกษาต่อทันที", ParagraphStyle('Notice', fontName='Sarabun', fontSize=9, leading=13, textColor=colors.HexColor('#334155'))))
-    story.append(Spacer(1, 0.5*cm))
+    # ---------------------------------------------------------
+    # 3. Form Items ๑ - ๖
+    # ---------------------------------------------------------
+    # Date parsing
+    b_day, b_month, b_year = parse_thai_date(applicant.get('birth_date'))
+    full_name = f"{applicant.get('title','')}{applicant.get('first_name','')} {applicant.get('last_name','')}"
 
-    sig_data = [
+    # Item 1: ชื่อ-นามสกุล
+    item_1 = (
+        f"๑. ชื่อ-นามสกุล {val_or_dots(full_name, '....................................................................')} "
+        f"เกิดวันที่ {val_or_dots(b_day, '............')} "
+        f"เดือน {val_or_dots(b_month, '............................')} "
+        f"พ.ศ. {val_or_dots(b_year, '...............')}"
+    )
+    story.append(Paragraph(item_1, line_style))
+
+    # Item 2: บิดา
+    f_name = applicant.get('father_name') or (applicant.get('parent_name') if applicant.get('parent_relation') == 'บิดา' else '')
+    f_age = applicant.get('father_age') or ''
+    f_job = applicant.get('father_job') or ''
+    item_2 = (
+        f"๒. ชื่อ-สกุลบิดา {val_or_dots(f_name, '....................................................................')} "
+        f"อายุ {val_or_dots(f_age, '............')} ปี "
+        f"อาชีพ {val_or_dots(f_job, '.............................................')}"
+    )
+    story.append(Paragraph(item_2, line_style))
+
+    # Item 3: มารดา
+    m_name = applicant.get('mother_name') or (applicant.get('parent_name') if applicant.get('parent_relation') == 'มารดา' else '')
+    m_age = applicant.get('mother_age') or ''
+    m_job = applicant.get('mother_job') or ''
+    item_3 = (
+        f"๓. ชื่อ-สกุลมารดา {val_or_dots(m_name, '...................................................................')} "
+        f"อายุ {val_or_dots(m_age, '............')} ปี "
+        f"อาชีพ {val_or_dots(m_job, '.............................................')}"
+    )
+    story.append(Paragraph(item_3, line_style))
+
+    # Item 4: ที่อยู่
+    addr_no = applicant.get('address_no', '')
+    moo = applicant.get('moo', '')
+    soi = applicant.get('soi', '')
+    road = applicant.get('road', '')
+    tambon = applicant.get('tambon', '')
+    amphur = applicant.get('amphur', '')
+    province = applicant.get('province', '')
+    zipcode = applicant.get('zipcode', '')
+    phone = applicant.get('phone', '')
+
+    item_4a = (
+        f"๔. ที่อยู่ปัจจุบันที่สามารถติดต่อได้ บ้านเลขที่ {val_or_dots(addr_no, '.......')} "
+        f"หมู่ {val_or_dots(moo, '.......')} "
+        f"ซอย {val_or_dots(soi, '.................')} "
+        f"ถนน {val_or_dots(road, '...........................')}"
+    )
+    item_4b = (
+        f"&nbsp;&nbsp;&nbsp;&nbsp;ตำบล {val_or_dots(tambon, '.....................................')} "
+        f"อำเภอ {val_or_dots(amphur, '..................................')} "
+        f"จังหวัด {val_or_dots(province, '...........................................')}"
+    )
+    item_4c = (
+        f"&nbsp;&nbsp;&nbsp;&nbsp;รหัสไปรษณีย์ {val_or_dots(zipcode, '........................')} "
+        f"หมายเลขโทรศัพท์ {val_or_dots(phone, '................................................')}"
+    )
+    story.append(Paragraph(item_4a, line_style))
+    story.append(Paragraph(item_4b, line_style))
+    story.append(Paragraph(item_4c, line_style))
+
+    # Item 5: โรงเรียนเดิม
+    curr_grade = applicant.get('current_grade') or ('ม.3' if level == 'ปวช.' else 'ปวช.3 / ม.6')
+    school_name = applicant.get('prev_school', '')
+    sch_no = applicant.get('school_address_no', '')
+    sch_tambon = applicant.get('school_tambon', '')
+    sch_amphur = applicant.get('school_amphur', '')
+    sch_prov = applicant.get('school_province') or applicant.get('prev_school_province', '')
+    gpax = applicant.get('gpax', '')
+    curr_major = applicant.get('current_major', '')
+
+    item_5a = (
+        f"๕. กำลังศึกษาอยู่ในระดับชั้น {val_or_dots(curr_grade, '...............................')} "
+        f"โรงเรียน {val_or_dots(school_name, '..................................................................')}"
+    )
+    item_5b = (
+        f"&nbsp;&nbsp;&nbsp;&nbsp;ตั้งอยู่เลขที่ {val_or_dots(sch_no, '.....................')} "
+        f"ตำบล {val_or_dots(sch_tambon, '................................')} "
+        f"อำเภอ {val_or_dots(sch_amphur, '................................')} "
+        f"จังหวัด {val_or_dots(sch_prov, '.....................')}"
+    )
+    item_5c = (
+        f"&nbsp;&nbsp;&nbsp;&nbsp;ผลการเรียนเฉลี่ยสะสม {val_or_dots(gpax, '...................................')} "
+        f"สาขาวิชา {val_or_dots(curr_major, '....................................................................')}"
+    )
+    story.append(Paragraph(item_5a, line_style))
+    story.append(Paragraph(item_5b, line_style))
+    story.append(Paragraph(item_5c, line_style))
+
+    # Item 6: สาขาวิชาที่ต้องการสมัคร
+    major_name = applicant.get('major_name', '')
+    major_second = applicant.get('major_second_choice', '')
+
+    dip_major = major_name if level == "ปวส." else ""
+    voc_major_1 = major_name if level == "ปวช." else ""
+    voc_major_2 = major_second if level == "ปวช." else ""
+
+    item_6a = f"๖. ต้องการสมัครเข้าเรียน ระดับ ปวส. สาขาวิชา {val_or_dots(dip_major, '..............................................................................')}"
+    item_6b = f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ระดับ ปวช. สาขาวิชาลำดับที่ ๑. {val_or_dots(voc_major_1, '...................................................................')}"
+    item_6c = f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;สาขาวิชาลำดับที่ ๒. {val_or_dots(voc_major_2, '...................................................................')}"
+    story.append(Paragraph(item_6a, line_style))
+    story.append(Paragraph(item_6b, line_style))
+    story.append(Paragraph(item_6c, line_style))
+    story.append(Spacer(1, 0.3*cm))
+
+    # ---------------------------------------------------------
+    # 4. Required Documents Checklist
+    # ---------------------------------------------------------
+    docs_html = (
+        "<b>หลักฐานประกอบการสมัคร</b> "
+        "๑. เอกสารแสดงผลการเรียนเฉลี่ยสะสม ๕ ภาคเรียน จำนวน ๑ ฉบับ<br/>"
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        "๒. สำเนาบัตรประชาชน / สำเนาทะเบียนบ้าน จำนวน ๑ ฉบับ<br/>"
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        "๓. สำเนาเกียรติบัตร/ใบรับรองความสามารถพิเศษ/ใบประกาศ (ถ้ามี)"
+    )
+    story.append(Paragraph(docs_html, line_style))
+    story.append(Spacer(1, 0.4*cm))
+
+    # ---------------------------------------------------------
+    # 5. Signatures (Applicant)
+    # ---------------------------------------------------------
+    now = datetime.now()
+    cur_d = str(now.day)
+    cur_m = THAI_MONTHS[now.month]
+    cur_y = str(now.year + 543)
+
+    sig_html = (
+        f"ลงชื่อ ......................................................... ผู้สมัคร<br/>"
+        f"( {val_or_dots(full_name, '.........................................................')} )<br/>"
+        f"วันที่ {cur_d} เดือน {cur_m} พ.ศ. {cur_y}"
+    )
+
+    # Place QR Code and Applicant ID at Bottom Left for verification audit
+    qr_url = f"{base_url}/status?national_id={applicant['national_id']}"
+    qr_path = generate_qr_image(qr_url)
+    qr_img = RLImage(qr_path, width=1.6*cm, height=1.6*cm)
+
+    bottom_table = Table(
         [
-            Paragraph("ลงชื่อ .............................................................. ผู้สมัคร<br/>( .............................................................. )<br/>วันที่ ........ / .................... / ...........", ParagraphStyle('Sig', fontName='Sarabun', fontSize=10, leading=16, alignment=1)),
-            Paragraph("ลงชื่อ .............................................................. ผู้รับสมัคร/เจ้าหน้าที่<br/>( .............................................................. )<br/>วันที่ ........ / .................... / ...........", ParagraphStyle('Sig', fontName='Sarabun', fontSize=10, leading=16, alignment=1))
-        ]
-    ]
-    sig_table = Table(sig_data, colWidths=[8.5*cm, 8.5*cm])
-    sig_table.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            [
+                qr_img,
+                Paragraph(f"<font size=8 color='#64748b'>เลขที่ใบสมัคร: <b>{applicant['id']}</b><br/>สแกนตรวจสอบสถานะออนไลน์</font>", ParagraphStyle('QRSub', fontName='Sarabun', fontSize=8, leading=11)),
+                Paragraph(sig_html, right_sig_style)
+            ]
+        ],
+        colWidths=[1.8*cm, 6.2*cm, 10.0*cm]
+    )
+    bottom_table.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
+        ('ALIGN', (2,0), (2,0), 'RIGHT'),
     ]))
-    story.append(sig_table)
+    story.append(bottom_table)
 
     doc.build(story)
     return output_path
@@ -252,6 +358,7 @@ def generate_application_pdf(applicant: dict, output_path: str, base_url: str = 
 def generate_enrollment_pdf(applicant: dict, enrollment: dict, output_path: str, base_url: str = "http://localhost:8000"):
     """
     Generates official A4 Student Enrollment & Contract Form (ใบมอบตัวและสัญญาการเป็นนักศึกษา)
+    วิทยาลัยเทคนิคท่าหลวงซิเมนต์ไทยอนุสรณ์
     """
     doc = SimpleDocTemplate(
         output_path,
@@ -263,7 +370,7 @@ def generate_enrollment_pdf(applicant: dict, enrollment: dict, output_path: str,
     )
 
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('ThaiTitle', fontName='Sarabun-Bold', fontSize=17, leading=22, alignment=1, textColor=colors.HexColor('#065f46'))
+    title_style = ParagraphStyle('ThaiTitle', fontName='Sarabun-Bold', fontSize=16, leading=21, alignment=1, textColor=colors.HexColor('#065f46'))
     subtitle_style = ParagraphStyle('ThaiSub', fontName='Sarabun', fontSize=11, leading=15, alignment=1, textColor=colors.HexColor('#475569'))
     section_title = ParagraphStyle('Sec', fontName='Sarabun-Bold', fontSize=12, leading=16, textColor=colors.HexColor('#047857'), spaceBefore=8, spaceAfter=4)
     normal_style = ParagraphStyle('Norm', fontName='Sarabun', fontSize=10, leading=15, textColor=colors.black)
@@ -272,8 +379,8 @@ def generate_enrollment_pdf(applicant: dict, enrollment: dict, output_path: str,
     story = []
 
     # Header
-    story.append(Paragraph("<b>วิทยาลัยอาชีวศึกษา (Vocational College)</b>", title_style))
-    story.append(Paragraph("<b>ใบมอบตัวและสัญญาการเป็นนักเรียน นักศึกษา ประจำปีการศึกษา 2568</b>", title_style))
+    story.append(Paragraph("<b>วิทยาลัยเทคนิคท่าหลวงซิเมนต์ไทยอนุสรณ์</b>", title_style))
+    story.append(Paragraph("<b>ใบมอบตัวและสัญญาการเป็นนักเรียน นักศึกษา ประจำปีการศึกษา ๒๕๖๘</b>", title_style))
     story.append(Paragraph(f"เลขที่ใบสมัคร: {applicant['id']} &nbsp;|&nbsp; วันที่ทำสัญญา: {enrollment.get('enrollment_date') or applicant['created_at'][:10]}", subtitle_style))
     story.append(Spacer(1, 0.4*cm))
 
@@ -327,7 +434,7 @@ def generate_enrollment_pdf(applicant: dict, enrollment: dict, output_path: str,
         "หากนักเรียน/นักศึกษาฝ่าฝืนระเบียบสถานศึกษา ข้าพเจ้ายินยอมให้ทางสถานศึกษาดำเนินการลงโทษตามระเบียบ หรือพิจารณาให้พ้นสภาพจากการเป็นนักเรียน/นักศึกษาตามขั้นตอนของสถานศึกษาต่อไป"
     )
     story.append(Paragraph(terms_text, body_style))
-    story.append(Spacer(1, 0.6*cm))
+    story.append(Spacer(1, 0.5*cm))
 
     # Signatures
     story.append(Paragraph("3. ลายมือชื่อผู้ทำสัญญาและเจ้าหน้าที่", section_title))

@@ -215,18 +215,34 @@ async def process_apply(
     nationality: str = Form("ไทย"),
     phone: str = Form(...),
     email: Optional[str] = Form(None),
+    apply_track: Optional[str] = Form(""),
     address_no: Optional[str] = Form(""),
     moo: Optional[str] = Form(""),
+    soi: Optional[str] = Form(""),
+    road: Optional[str] = Form(""),
     tambon: Optional[str] = Form(""),
     amphur: Optional[str] = Form(""),
     province: Optional[str] = Form(""),
     zipcode: Optional[str] = Form(""),
+    current_grade: Optional[str] = Form(""),
     prev_school: str = Form(...),
-    prev_school_province: str = Form(...),
+    school_address_no: Optional[str] = Form(""),
+    school_tambon: Optional[str] = Form(""),
+    school_amphur: Optional[str] = Form(""),
+    school_province: Optional[str] = Form(""),
+    prev_school_province: Optional[str] = Form(""),
+    current_major: Optional[str] = Form(""),
+    major_second_choice: Optional[str] = Form(""),
     gpax: float = Form(...),
-    parent_name: str = Form(...),
-    parent_relation: str = Form(...),
-    parent_phone: str = Form(...),
+    parent_name: Optional[str] = Form(""),
+    parent_relation: Optional[str] = Form(""),
+    parent_phone: Optional[str] = Form(""),
+    father_name: Optional[str] = Form(""),
+    father_age: Optional[str] = Form(""),
+    father_job: Optional[str] = Form(""),
+    mother_name: Optional[str] = Form(""),
+    mother_age: Optional[str] = Form(""),
+    mother_job: Optional[str] = Form(""),
     referral_source: Optional[str] = Form(""),
     referral_teacher: Optional[str] = Form(""),
     file_photo: UploadFile = File(...),
@@ -265,21 +281,31 @@ async def process_apply(
 
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    # Fallbacks for parent info
+    final_parent_name = parent_name or father_name or mother_name or "-"
+    final_parent_rel = parent_relation or ("บิดา" if father_name else ("มารดา" if mother_name else "ผู้ปกครอง"))
+    final_parent_phone = parent_phone or phone
+    final_school_prov = school_province or prev_school_province or province
+
     # Insert applicant record
     cursor.execute("""
     INSERT INTO applicants (
         id, national_id, title, first_name, last_name, birth_date, phone, email,
-        gender, religion, nationality, address_no, moo, tambon, amphur, province, zipcode,
-        prev_school, prev_school_province, gpax, level, major_id,
-        parent_name, parent_relation, parent_phone, referral_source, referral_teacher,
-        status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_REVIEW', ?, ?)
+        gender, religion, nationality, address_no, moo, soi, road, tambon, amphur, province, zipcode,
+        current_grade, prev_school, school_address_no, school_tambon, school_amphur, school_province,
+        prev_school_province, current_major, gpax, level, apply_track, major_id, major_second_choice,
+        parent_name, parent_relation, parent_phone,
+        father_name, father_age, father_job, mother_name, mother_age, mother_job,
+        referral_source, referral_teacher, status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_REVIEW', ?, ?)
     """, (
         applicant_id, clean_id, title, first_name, last_name, birth_date, phone, email,
-        gender, religion, nationality, address_no, moo, tambon, amphur, province, zipcode,
-        prev_school, prev_school_province, gpax, level, major_id,
-        parent_name, parent_relation, parent_phone, referral_source, referral_teacher,
-        now_str, now_str
+        gender, religion, nationality, address_no, moo, soi, road, tambon, amphur, province, zipcode,
+        current_grade, prev_school, school_address_no, school_tambon, school_amphur, final_school_prov,
+        final_school_prov, current_major, gpax, level, apply_track, major_id, major_second_choice,
+        final_parent_name, final_parent_rel, final_parent_phone,
+        father_name, father_age, father_job, mother_name, mother_age, mother_job,
+        referral_source, referral_teacher, now_str, now_str
     ))
 
     # Helper function to save file
