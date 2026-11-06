@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}ระบบมอบตัวและออกรหัสนักศึกษา - งานรับสมัครและทะเบียน{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">ระบบบันทึกการมอบตัวและออกรหัสนักศึกษา</h1>
+            <p class="text-xs text-slate-500 mt-1">กำหนดรหัสประจำตัวนักศึกษาอัตโนมัติ บันทึกข้อมูลผู้ปกครองและพยานการทำสัญญา</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="/admin/applicants" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> กลับไปหน้ารายชื่อ
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+
+        <!-- Left 1 Column: Enrollment Form -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+            <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+                <i data-lucide="user-plus" class="w-5 h-5 text-emerald-600"></i> บันทึกการมอบตัว
+            </h2>
+
+            <form action="/admin/enrollment/save" method="POST" class="space-y-4">
+                <!-- Select Qualified Applicant -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">เลือกผู้สมัคร (ที่ผ่านการคัดเลือก) <span class="text-rose-500">*</span></label>
+                    <select name="applicant_id" id="enrollApplicantSelect" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+                        <option value="">-- เลือกผู้สมัครเพื่อมอบตัว --</option>
+                        {% for app in qualified_applicants %}
+                        <option value="{{ app.id }}"
+                                data-level="{{ app.level }}"
+                                data-major-code="{{ app.major_code }}"
+                                data-parent="{{ app.parent_name }}"
+                                data-parent-rel="{{ app.parent_relation }}"
+                                data-parent-phone="{{ app.parent_phone }}"
+                                {% if selected_applicant and selected_applicant.id == app.id %}selected{% endif %}>
+                            {{ app.id }} - {{ app.title }}{{ app.first_name }} {{ app.last_name }} ({{ app.major_name }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Auto-Generated Student ID -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">
+                        รหัสประจำตัวนักเรียน/นักศึกษา (Auto-Generated) <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" name="student_id" id="studentIdInput" required
+                           value="{{ proposed_student_id or '' }}"
+                           placeholder="เช่น 68201010001"
+                           class="w-full px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50/50 text-emerald-950 font-mono font-bold text-sm tracking-wider">
+                    <span class="text-[10px] text-slate-400 mt-1 block">รูปแบบ: [ปี พ.ศ. 2 หลัก][รหัสสาขา 5 หลัก][ลำดับ 4 หลัก]</span>
+                </div>
+
+                <!-- Guardian Name & Phone -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ผู้ปกครองผู้มอบตัว <span class="text-rose-500">*</span></label>
+                        <input type="text" name="guardian_name" id="guardianName" required
+                               value="{{ selected_applicant.parent_name if selected_applicant else '' }}"
+                               placeholder="ชื่อ-สกุล ผู้ปกครอง" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ความสัมพันธ์ <span class="text-rose-500">*</span></label>
+                        <input type="text" name="guardian_relation" id="guardianRel" required
+                               value="{{ selected_applicant.parent_relation if selected_applicant else 'บิดา' }}"
+                               placeholder="เช่น บิดา, มารดา" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">เบอร์โทรศัพท์ผู้ปกครอง</label>
+                    <input type="text" name="guardian_phone" id="guardianPhone"
+                           value="{{ selected_applicant.parent_phone if selected_applicant else '' }}"
+                           placeholder="08xxxxxxxx" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+
+                <!-- Witness & Date -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">พยานฝ่ายสถานศึกษา</label>
+                        <input type="text" name="witness_name" value="อาจารย์หัวหน้างานทะเบียน" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">วันที่มอบตัว</label>
+                        <input type="date" name="enrollment_date" value="{{ today_str }}" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                </div>
+
+                <!-- Payment status -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">สถานะค่าธรรมเนียม/ประกัน</label>
+                    <select name="payment_status" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+                        <option value="PAID">ชำระเรียบร้อยแล้ว (PAID)</option>
+                        <option value="PENDING">ผ่อนผันการชำระ (PENDING)</option>
+                        <option value="WAIVED">ได้รับยกเว้น/ทุนการศึกษา (WAIVED)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-700/20 transition flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i> ยืนยันการมอบตัวและบันทึกรหัส
+                </button>
+            </form>
+        </div>
+
+        <!-- Right 2 Columns: Enrolled Students List -->
+        <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="award" class="w-5 h-5 text-emerald-600"></i> รายชื่อนักเรียน/นักศึกษาที่มอบตัวแล้ว ({{ enrolled_list | length }} คน)
+                </h2>
+                <span class="text-xs text-slate-400">ปีการศึกษา 2568</span>
+            </div>
+
+            <div class="overflow-x-auto flex-1">
+                <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase">
+                        <tr>
+                            <th class="py-2.5 px-3">รหัสนักศึกษา</th>
+                            <th class="py-2.5 px-3">ชื่อ-นามสกุล</th>
+                            <th class="py-2.5 px-3">ระดับ/สาขาวิชา</th>
+                            <th class="py-2.5 px-3">ผู้ปกครองที่มอบตัว</th>
+                            <th class="py-2.5 px-3">วันที่มอบตัว</th>
+                            <th class="py-2.5 px-3 text-center">พิมพ์สัญญา</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for en in enrolled_list %}
+                        <tr class="hover:bg-slate-50/60">
+                            <td class="py-2.5 px-3 font-mono font-bold text-emerald-800 text-sm">{{ en.student_id }}</td>
+                            <td class="py-2.5 px-3 font-semibold text-slate-800">{{ en.title }}{{ en.first_name }} {{ en.last_name }}</td>
+                            <td class="py-2.5 px-3">
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {% if en.level == 'ปวช.' %}bg-blue-100 text-blue-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                                    {{ en.level }}
+                                </span>
+                                {{ en.major_name }}
+                            </td>
+                            <td class="py-2.5 px-3 text-slate-600">{{ en.guardian_name }} ({{ en.guardian_relation }})</td>
+                            <td class="py-2.5 px-3 text-slate-400">{{ en.enrollment_date }}</td>
+                            <td class="py-2.5 px-3 text-center">
+                                <a href="/download/enrollment-pdf/{{ en.applicant_id }}" target="_blank" title="พิมพ์ใบมอบตัว (PDF)" class="p-1.5 text-emerald-700 hover:bg-emerald-50 rounded-lg inline-flex items-center gap-1 transition">
+                                    <i data-lucide="printer" class="w-4 h-4"></i> พิมพ์
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-slate-400">ยังไม่มีผู้มอบตัวในระบบ</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const appSelect = document.getElementById('enrollApplicantSelect');
+    const studentIdInput = document.getElementById('studentIdInput');
+    const guardianName = document.getElementById('guardianName');
+    const guardianRel = document.getElementById('guardianRel');
+    const guardianPhone = document.getElementById('guardianPhone');
+
+    appSelect.addEventListener('change', () => {
+        const opt = appSelect.selectedOptions[0];
+        if (!opt || !opt.value) return;
+
+        guardianName.value = opt.dataset.parent || '';
+        guardianRel.value = opt.dataset.parentRel || 'ผู้ปกครอง';
+        guardianPhone.value = opt.dataset.parentPhone || '';
+
+        // Generate student ID if empty
+        const levelCode = opt.dataset.level === 'ปวช.' ? '2' : '3';
+        const majorCode = opt.dataset.majorCode || '0101';
+        const year = '68';
+        const randSeq = Math.floor(1000 + Math.random() * 9000);
+        studentIdInput.value = `${year}${majorCode}${randSeq}`;
+    });
+</script>
+{% endblock %}

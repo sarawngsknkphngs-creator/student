@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}ตรวจสอบเอกสารผู้สมัคร - {{ applicant.id }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Back Button -->
+    <a href="/admin/applicants" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-brand-800 mb-6 transition">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> ย้อนกลับไปหน้ารายชื่อผู้สมัคร
+    </a>
+
+    <!-- Top Card: Header & Current Status -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-800">{{ applicant.id }}</span>
+                <span class="text-xs text-slate-400">สมัครเมื่อ {{ applicant.created_at }}</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 mt-2">
+                {{ applicant.title }}{{ applicant.first_name }} {{ applicant.last_name }}
+            </h1>
+            <p class="text-sm text-slate-600 mt-0.5">
+                ระดับชั้น <b class="text-brand-800">{{ applicant.level }}</b> • {{ applicant.major_name }} (รหัส ศธ.02: <b>{{ applicant.major_code }}</b>)
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="/download/application-pdf/{{ applicant.id }}" target="_blank" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="printer" class="w-4 h-4"></i> พิมพ์ใบสมัคร (PDF)
+            </a>
+            {% if applicant.status in ['QUALIFIED', 'ENROLLED'] %}
+            <a href="/download/enrollment-pdf/{{ applicant.id }}" target="_blank" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs rounded-xl border border-emerald-300 transition flex items-center gap-1.5">
+                <i data-lucide="file-check" class="w-4 h-4"></i> สัญญาการมอบตัว (PDF)
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Grid: Documents Inspection (Left) vs Decision Panel (Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Column 1 & 2: Inspection of Attached Documents -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+                    <i data-lucide="file-search" class="w-5 h-5 text-brand-700"></i> ตรวจสอบเอกสารหลักฐานแนบ ({{ documents | length }} รายการ)
+                </h2>
+
+                <div class="space-y-6">
+                    {% for doc in documents %}
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <span class="font-bold text-slate-800 text-sm">
+                                    {% if doc.doc_type == 'PHOTO' %}1. รูปถ่ายหน้าตรง
+                                    {% elif doc.doc_type == 'TRANSCRIPT' %}2. ใบแสดงผลการเรียน (รบ. / ปพ.1)
+                                    {% elif doc.doc_type == 'ID_CARD' %}3. สำเนาบัตรประชาชนผู้สมัคร
+                                    {% elif doc.doc_type == 'HOUSE_REG' %}4. สำเนาทะเบียนบ้าน
+                                    {% else %}{{ doc.doc_type }}{% endif %}
+                                </span>
+                                <div class="text-[11px] text-slate-400">ชื่อไฟล์: {{ doc.file_name }} • อัปโหลดเมื่อ {{ doc.uploaded_at[:16] }}</div>
+                            </div>
+                            <a href="/{{ doc.file_path }}" target="_blank" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1">
+                                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> เปิดดูไฟล์เต็ม
+                            </a>
+                        </div>
+
+                        <!-- Document Preview Container -->
+                        <div class="bg-white p-3 rounded-lg border border-slate-200 overflow-hidden flex justify-center items-center">
+                            {% if doc.file_name.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')) %}
+                            <img src="/{{ doc.file_path }}" class="max-h-72 object-contain rounded border border-slate-100 shadow-sm">
+                            {% elif doc.file_name.lower().endswith('.pdf') %}
+                            <iframe src="/{{ doc.file_path }}" class="w-full h-80 rounded border-0"></iframe>
+                            {% else %}
+                            <div class="py-8 text-center text-slate-400 text-xs">
+                                ไฟล์เอกสาร <a href="/{{ doc.file_path }}" target="_blank" class="text-brand-700 underline">คลิกเพื่อดาวน์โหลดดู</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="py-12 text-center text-slate-400 text-sm">ไม่มีไฟล์เอกสารแนบ</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Student Full Dossier -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+                    <i data-lucide="info" class="w-5 h-5 text-brand-700"></i> ข้อมูลประวัติโดยละเอียด
+                </h2>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                    <div>
+                        <span class="text-slate-400 block">เลขบัตรประชาชน</span>
+                        <span class="font-mono font-bold text-slate-900 text-sm">{{ applicant.national_id }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">วันเดือนปีเกิด</span>
+                        <span class="font-semibold text-slate-800">{{ applicant.birth_date }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">เพศ / ศาสนา / สัญชาติ</span>
+                        <span class="font-semibold text-slate-800">{{ applicant.gender }} / {{ applicant.religion }} / {{ applicant.nationality }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">เบอร์โทรศัพท์มือถือ</span>
+                        <span class="font-mono font-semibold text-slate-800">{{ applicant.phone }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">อีเมล</span>
+                        <span class="font-semibold text-slate-800">{{ applicant.email or '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">เกรดเฉลี่ย (GPAX)</span>
+                        <span class="font-bold text-brand-800 text-sm">{{ applicant.gpax }}</span>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-slate-400 block">สถานศึกษาเดิม</span>
+                        <span class="font-semibold text-slate-800">{{ applicant.prev_school }} (จ.{{ applicant.prev_school_province }})</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">ผู้แนะนำ / ครูแนะแนว</span>
+                        <span class="font-semibold text-slate-800">{{ applicant.referral_teacher or applicant.referral_source or '-' }}</span>
+                    </div>
+                    <div class="col-span-3">
+                        <span class="text-slate-400 block">ที่อยู่ปัจจุบัน</span>
+                        <span class="font-semibold text-slate-800">{{ applicant.address_no }} ม.{{ applicant.moo }} ต.{{ applicant.tambon }} อ.{{ applicant.amphur }} จ.{{ applicant.province }} {{ applicant.zipcode }}</span>
+                    </div>
+                    <div class="col-span-3">
+                        <span class="text-slate-400 block">ผู้ปกครอง</span>
+                        <span class="font-semibold text-slate-800">{{ applicant.parent_name }} (ความสัมพันธ์: {{ applicant.parent_relation }}) • เบอร์โทร: {{ applicant.parent_phone }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 3: Decision & Action Box -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm sticky top-20">
+                <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+                    <i data-lucide="check-square" class="w-5 h-5 text-indigo-700"></i> ปรับปรุงสถานะและแจ้งผล
+                </h2>
+
+                <form action="/admin/applicant/{{ applicant.id }}/update-status" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">เปลี่ยนสถานะใบสมัครเป็น:</label>
+                        <select name="status" id="statusSelect" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-semibold text-xs bg-white">
+                            <option value="PENDING_REVIEW" {% if applicant.status == 'PENDING_REVIEW' %}selected{% endif %}>1. รอตรวจสอบเอกสาร</option>
+                            <option value="DOCS_INCOMPLETE" {% if applicant.status == 'DOCS_INCOMPLETE' %}selected{% endif %}>2. เอกสารไม่ครบ / รอแก้ไข</option>
+                            <option value="QUALIFIED" {% if applicant.status == 'QUALIFIED' %}selected{% endif %}>3. ผ่านการคัดเลือก (มีสิทธิ์มอบตัว)</option>
+                            <option value="ENROLLED" {% if applicant.status == 'ENROLLED' %}selected{% endif %}>4. มอบตัวเรียบร้อยแล้ว</option>
+                            <option value="REJECTED" {% if applicant.status == 'REJECTED' %}selected{% endif %}>5. ไม่ผ่านคุณสมบัติ</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                            หมายเหตุ / ข้อความแจ้งผู้สมัคร:
+                        </label>
+                        <textarea name="status_note" rows="3" placeholder="ระบุเหตุผลหากให้แก้ไขเอกสาร เช่น 'รูปถ่ายสำเนาบัตรประชาชนไม่ชัดเจน กรุณาถ่ายใหม่'..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">{{ applicant.status_note or '' }}</textarea>
+                    </div>
+
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
+                        <input type="checkbox" name="send_line" value="1" checked class="w-4 h-4 text-brand-600 rounded">
+                        <span>ส่งข้อความแจ้งเตือนผ่าน LINE ทันที</span>
+                    </label>
+
+                    <button type="submit" class="w-full py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-700/20 transition flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i> บันทึกผลการตรวจสอบ
+                    </button>
+                </form>
+
+                <!-- Enrollment Action if QUALIFIED -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-800 mb-2">ขั้นตอนการมอบตัว:</h3>
+                    {% if applicant.status == 'ENROLLED' %}
+                    <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900">
+                        <div class="font-bold">✓ มอบตัวเรียบร้อยแล้ว</div>
+                        <div>รหัสนักศึกษา: <b>{{ enrollment.student_id if enrollment else '-' }}</b></div>
+                    </div>
+                    {% else %}
+                    <a href="/admin/enrollment?applicant_id={{ applicant.id }}" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+                        <i data-lucide="user-check" class="w-4 h-4"></i> บันทึกข้อมูลการมอบตัว & ออกรหัสนักศึกษา
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

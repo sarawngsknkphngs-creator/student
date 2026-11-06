@@ -1,0 +1,42 @@
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Generated PDFs and QRs
+static/generated_pdfs/*.pdf
+static/generated_pdfs/qr/*.png
+
+# Uploaded documents (keep folders via .gitkeep)
+static/uploads/photos/*
+!static/uploads/photos/sample*
+!static/uploads/photos/.gitkeep
+static/uploads/transcripts/*
+!static/uploads/transcripts/sample*
+!static/uploads/transcripts/.gitkeep
+static/uploads/id_cards/*
+!static/uploads/id_cards/sample*
+!static/uploads/id_cards/.gitkeep
+static/uploads/house_regs/*
+!static/uploads/house_regs/sample*
+!static/uploads/house_regs/.gitkeep
+static/uploads/other/*
+!static/uploads/other/.gitkeep
+
+# Local SQLite Database
+# admission.db
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini

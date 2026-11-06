@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}จัดการรายชื่อผู้สมัครเรียน - งานรับสมัครและทะเบียน{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Top Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">จัดการรายชื่อผู้สมัครเรียน</h1>
+            <p class="text-xs text-slate-500 mt-0.5">ค้นหา ตรวจสอบเอกสาร และปรับปรุงสถานะผู้สมัครแบบเรียลไทม์</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="/admin/export/std02-excel" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> ส่งออก Excel (ศธ.02)
+            </a>
+            <a href="/admin/export/std02-csv" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-semibold text-xs rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="download" class="w-4 h-4"></i> CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <form action="/admin/applicants" method="GET" class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <!-- Search Query -->
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ค้นหา (ชื่อ-สกุล, เลข 13 หลัก, เลขใบสมัคร)</label>
+                <div class="relative">
+                    <input type="text" name="q" value="{{ query_q or '' }}" placeholder="พิมพ์คำค้นหา..." class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                </div>
+            </div>
+
+            <!-- Level Filter -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ระดับชั้น</label>
+                <select name="level" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+                    <option value="">ทั้งหมด</option>
+                    <option value="ปวช." {% if query_level == 'ปวช.' %}selected{% endif %}>ปวช.</option>
+                    <option value="ปวส." {% if query_level == 'ปวส.' %}selected{% endif %}>ปวส.</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">สถานะใบสมัคร</label>
+                <select name="status" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+                    <option value="">ทั้งหมด</option>
+                    <option value="PENDING_REVIEW" {% if query_status == 'PENDING_REVIEW' %}selected{% endif %}>รอตรวจสอบ</option>
+                    <option value="DOCS_INCOMPLETE" {% if query_status == 'DOCS_INCOMPLETE' %}selected{% endif %}>รอแก้ไขเอกสาร</option>
+                    <option value="QUALIFIED" {% if query_status == 'QUALIFIED' %}selected{% endif %}>ผ่านการคัดเลือก</option>
+                    <option value="ENROLLED" {% if query_status == 'ENROLLED' %}selected{% endif %}>มอบตัวแล้ว</option>
+                    <option value="REJECTED" {% if query_status == 'REJECTED' %}selected{% endif %}>ไม่ผ่านคุณสมบัติ</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 py-2 bg-brand-800 hover:bg-brand-900 text-white font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1">
+                    <i data-lucide="filter" class="w-3.5 h-3.5"></i> กรองข้อมูล
+                </button>
+                <a href="/admin/applicants" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs rounded-xl font-medium">ล้าง</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Applicants Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4">เลขที่ใบสมัคร</th>
+                        <th class="py-3 px-4">ผู้สมัคร / เลข 13 หลัก</th>
+                        <th class="py-3 px-4">ระดับ / สาขาวิชา</th>
+                        <th class="py-3 px-4">โรงเรียนเดิม (GPAX)</th>
+                        <th class="py-3 px-4">เบอร์โทร</th>
+                        <th class="py-3 px-4">วันที่สมัคร</th>
+                        <th class="py-3 px-4">สถานะ</th>
+                        <th class="py-3 px-4 text-center">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for app in applicants %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="py-3 px-4 font-mono font-bold text-brand-900">
+                            {{ app.id }}
+                            {% if app.student_id %}
+                            <div class="text-[10px] text-emerald-700 font-bold">รหัส: {{ app.student_id }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="font-bold text-slate-900 text-sm">{{ app.title }}{{ app.first_name }} {{ app.last_name }}</div>
+                            <div class="font-mono text-slate-400 text-[11px]">{{ app.national_id }}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold {% if app.level == 'ปวช.' %}bg-blue-100 text-blue-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                                {{ app.level }}
+                            </span>
+                            <div class="font-semibold text-slate-800 mt-0.5">{{ app.major_name }}</div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="text-slate-800">{{ app.prev_school or '-' }}</div>
+                            <div class="text-[11px] text-slate-400">เกรดเฉลี่ย: <b class="text-brand-800">{{ app.gpax or '-' }}</b></div>
+                        </td>
+                        <td class="py-3 px-4 font-mono">{{ app.phone }}</td>
+                        <td class="py-3 px-4 text-slate-400 text-[11px]">{{ app.created_at[:10] }}</td>
+                        <td class="py-3 px-4">
+                            {% if app.status == 'PENDING_REVIEW' %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> รอตรวจ
+                            </span>
+                            {% elif app.status == 'DOCS_INCOMPLETE' %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
+                                รอแก้ไขเอกสาร
+                            </span>
+                            {% elif app.status == 'QUALIFIED' %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800">
+                                ผ่านการคัดเลือก
+                            </span>
+                            {% elif app.status == 'ENROLLED' %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                มอบตัวแล้ว
+                            </span>
+                            {% else %}
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">
+                                {{ app.status }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <a href="/admin/applicant/{{ app.id }}" class="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-800 rounded-lg font-semibold text-xs flex items-center gap-1 transition">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i> ตรวจสอบ
+                                </a>
+                                <a href="/download/application-pdf/{{ app.id }}" target="_blank" title="พิมพ์ใบสมัคร PDF" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition">
+                                    <i data-lucide="printer" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="py-12 text-center text-slate-400">
+                            ไม่พบข้อมูลผู้สมัครที่ตรงกับเงื่อนไขการค้นหา
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-4 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
+            <span>แสดงทั้งหมด <b>{{ applicants | length }}</b> รายการ</span>
+            <span class="text-slate-400">ระบบจัดการผู้สมัคร วิทยาลัยอาชีวศึกษา</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
