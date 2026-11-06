@@ -26,6 +26,10 @@ init_db()
 app.mount("/static", StaticFiles(directory="d:/sk/static"), name="static")
 templates = Jinja2Templates(directory="d:/sk/templates")
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("d:/sk/static/favicon.svg", media_type="image/svg+xml")
+
 def render_template(request: Request, name: str, context: dict = None, status_code: int = 200):
     ctx = context or {}
     return templates.TemplateResponse(request=request, name=name, context=ctx, status_code=status_code)
